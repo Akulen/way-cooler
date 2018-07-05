@@ -5,7 +5,7 @@ use wlroots::{events::{key_events::Key,
                                         BTN_RIGHT, BTN_SIDE}},
               xkbcommon::xkb::keysyms::*, KeyboardModifier};
 
-use rlua::{self, Error::RuntimeError, Lua, Table, Value};
+use rlua::{self, Lua, Table, Value};
 
 /// Human readable versions of the standard modifier keys.
 const MOD_NAMES: [&str; 8] = ["Shift", "Caps", "Control", "Alt", "Mod2", "Mod3", "Mod4", "Mod5"];
@@ -73,23 +73,25 @@ pub fn mods_to_num(modifiers: Table) -> rlua::Result<KeyboardModifier> {
 
 /// Convert a modifier to the Rust interpretation, from the Lua interpretation
 pub fn mods_to_rust(mods_table: Table) -> rlua::Result<Vec<Key>> {
-    let mut mods = Vec::with_capacity(MOD_NAMES.len());
-    for modifier in mods_table.pairs::<Value, String>() {
-        mods.push(match &*modifier?.1 {
-                      "Shift" => KEY_Shift_L,
-                      "Caps" | "Lock" => KEY_Caps_Lock,
-                      "Control" | "Ctrl" => KEY_Control_L,
-                      "Alt" | "Mod1" => KEY_Alt_L,
-                      "Mod2" => KEY_Meta_L,
-                      "Mod3" => KEY_Alt_L,
-                      "Mod4" => KEY_Super_L,
-                      "Mod5" => KEY_Hyper_L,
-                      string => {
-                          return Err(RuntimeError(format!("{} is an invalid modifier", string)))?
-                      }
-                  })
-    }
-    Ok(mods)
+    Ok(mods_table.pairs::<Value, String>().filter_map(|modifier| {
+        modifier.ok().and_then(|m| {
+            match &*m.1 {
+                "Shift" => Some(KEY_Shift_L),
+                "Caps" | "Lock" => Some(KEY_Caps_Lock),
+                "Control" | "Ctrl" => Some(KEY_Control_L),
+                "Alt" | "Mod1" => Some(KEY_Alt_L),
+                "Mod2" => Some(KEY_Meta_L),
+                "Mod3" => Some(KEY_Alt_L),
+                "Mod4" => Some(KEY_Super_L),
+                "Mod5" => Some(KEY_Hyper_L),
+                "" => None,
+                string => {
+                    warn!("{} is an invalid modifier", string);
+                    None
+                }
+            }
+        })
+    }).collect())
 }
 
 /// Convert a mouse event from Wayland to the representation Lua expcets
