@@ -223,6 +223,18 @@ fn index<'lua>(lua: &'lua Lua,
                     return screens[0].clone().to_lua(lua)
                 }
             }
+            if string == "index" {
+                if let Ok(screen) = Screen::cast(obj.clone().into()) {
+                    let mut res = 0;
+                    for s in screens {
+                        res += 1;
+                        if s.state()?.xid == screen.state()?.xid {
+                            return Ok(Value::Integer(res));
+                        }
+                    }
+                }
+                return Ok(Value::Integer(0))
+            }
             for screen in screens.iter() {
                 let mut screen_state = screen.state()?;
                 for output in &screen_state.outputs {
