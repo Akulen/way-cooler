@@ -78,6 +78,9 @@ pub fn load_config(mut lua: &mut rlua::Lua, compositor: &mut CompositorHandle) {
                             paths + ";"
                             + init_dir.join("?.lua")
                                       .to_str()
+                                      .expect("init_dir not a valid UTF-8 string") + ";"
+                            + init_dir.join("?/init.lua")
+                                      .to_str()
                                       .expect("init_dir not a valid UTF-8 string"))
                        .expect("Failed to set package.path");
             }
