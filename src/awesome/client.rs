@@ -55,6 +55,7 @@ fn method_setup<'lua>(lua: &'lua Lua,
     // TODO Do properly
     use super::dummy;
     builder.method("connect_signal".into(), lua.create_function(dummy)?)?
+           .method("disconnect_signal".into(), lua.create_function(dummy)?)?
            .method("get".into(), lua.create_function(dummy_table)?)
 }
 
