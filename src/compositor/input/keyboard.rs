@@ -110,7 +110,7 @@ fn emit_awesome_keybindings(lua: &Lua,
     } else {
         // TODO Should also emit by current focused client so we can
         // do client based rules.
-        let keybindings = lua.named_registry_value::<Vec<rlua::AnyUserData>>(ROOT_KEYS_HANDLE)?;
+        let keybindings = lua.named_registry_value::<Vec<rlua::AnyUserData>>(ROOT_KEYS_HANDLE).or(Ok(vec![]))?;
         for event_keysym in event.pressed_keys() {
             for binding in &keybindings {
                 let obj: awesome::Object = binding.clone().into();
